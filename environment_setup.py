@@ -16,9 +16,10 @@ import pal.resources.rtmodels as rtmodels
 
 
 def terminate():
+
     QLabsRealTime().terminate_real_time_model(rtmodels.QCAR_STUDIO)
 
-def main(
+def setup(
     initialPosition=[-1.205, -0.83, 0.005],
     initialOrientation=[0, 0, -44.7],
     rtModel=rtmodels.QCAR,
@@ -35,7 +36,8 @@ def main(
         quit()
 
     # Delete any previous QCar instances and stop any running spawn models
-    terminate()
+    qlabs.destroy_all_spawned_actors()
+    QLabsRealTime().terminate_all_real_time_models()
 
     # Spawn a QCar at the given initial pose
     qcar = QLabsQCar(qlabs)
@@ -52,52 +54,50 @@ def main(
     qcar.possess()
 
     # Spawn stop signs
-    StopSign1 = QLabsStopSign(qlabs)
-    StopSign1.spawn(
+    stopsign1 = QLabsStopSign(qlabs)
+    stopsign1.spawn(
         location=[24.328, 18.0, 0.0],
         rotation=[0.0, 0.0, -1.6],
         waitForConfirmation=False,
     )
 
-    StopSign2 = QLabsStopSign(qlabs)
-    StopSign2.spawn(
+    stopsign2 = QLabsStopSign(qlabs)
+    stopsign2.spawn(
         location=[24.328, 2.5, 0.0],
         rotation=[0.0, 0.0, -1.6],
         waitForConfirmation=False,
     )
 
-    StopSign3 = QLabsStopSign(qlabs)
-    StopSign3.spawn(
+    stopsign3 = QLabsStopSign(qlabs)
+    stopsign3.spawn(
         location=[-10.719, 46.669, 0.185],
         rotation=[0.0, 0.0, 0.0],
         waitForConfirmation=False,
     )
 
-    StopSign4 = QLabsStopSign(qlabs)
-    StopSign4.spawn(
+    stopsign4 = QLabsStopSign(qlabs)
+    stopsign4.spawn(
         location=[2.482, 46.673, 0.189],
         rotation=[0.0, 0.0, 0.0],
         waitForConfirmation=False,
     )
-    StopSign5 = QLabsStopSign(qlabs)
-    StopSign5.spawn(
-        location=[-3.195, -12.521, 0.2],
-        rotation=[0.0, 0.0, 3.14],
-        waitForConfirmation=False,
-    )
+
     # spawn traffic lights
-    TrafficLight1 = QLabsTrafficLight(qlabs)
-    TrafficLight1.spawn(location=[24.271, 32.997, 0.18], rotation=[0.0, 0.0, 0.0])
-    TrafficLight1.set_state(QLabsTrafficLight.STATE_RED)
+    trafficlight1 = QLabsTrafficLight(qlabs)
+    trafficlight1.spawn(location=[1.108, -12.534, 0.2], rotation=[0.0, 0.0, -1.6])
+    trafficlight1.set_color(QLabsTrafficLight.COLOR_GREEN)
 
-    TrafficLight2 = QLabsTrafficLight(qlabs)
-    TrafficLight2.spawn(location=[-21.586, 14.403, 0.192], rotation=[0.0, 0.0, math.pi])
-    TrafficLight2.set_state(QLabsTrafficLight.STATE_YELLOW)
+    trafficlight2 = QLabsTrafficLight(qlabs)
+    trafficlight2.spawn(location=[-21.586, 14.403, 0.192], rotation=[0.0, 0.0, math.pi])
+    trafficlight2.set_color(QLabsTrafficLight.COLOR_YELLOW)
 
-    TrafficLight3 = QLabsTrafficLight(qlabs)
-    TrafficLight3.spawn(location=[-21.586, 33.136, 0.182], rotation=[0.0, 0.0, math.pi])
-    TrafficLight3.set_state(QLabsTrafficLight.STATE_RED)
+    trafficlight3 = QLabsTrafficLight(qlabs)
+    trafficlight3.spawn(location=[-21.586, 33.136, 0.182], rotation=[0.0, 0.0, math.pi])
+    trafficlight3.set_color(QLabsTrafficLight.COLOR_RED)
 
+    trafficlight4 = QLabsTrafficLight(qlabs)
+    trafficlight4.spawn(location=[24.271, 32.997, 0.18], rotation=[0.0, 0.0, 0.0])
+    trafficlight4.set_color(QLabsTrafficLight.COLOR_RED)
 
     # Start spawn model
     QLabsRealTime().start_real_time_model(rtModel)
@@ -105,5 +105,9 @@ def main(
     return qcar
 
 
+def terminate():
+    QLabsRealTime().terminate_real_time_model(rtmodels.QCAR_STUDIO)
+
+
 if __name__ == "__main__":
-    main()
+    setup()

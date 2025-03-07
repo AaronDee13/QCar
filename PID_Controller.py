@@ -107,7 +107,7 @@ def main(command_queue: multiprocessing.Queue):
         qcar = QCar(readMode=1, frequency=controllerUpdateRate)
         if enableSteeringControl:
             ekf = QCarEKF(x_0=initialPose)
-            gps = QCarGPS(initialPose=initialPose)
+            gps = QCarGPS(initialPose=initialPose,calibrate=True)
         else:
             gps = memoryview(b'')
         #endregion
