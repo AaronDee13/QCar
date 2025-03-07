@@ -68,12 +68,12 @@ if enableSteeringControl:
 else:
     initialPose = [0, 0, 0]
 
-if not IS_PHYSICAL_QCAR:
-    import qlabs_setup
-    qlabs_setup.setup(
-        initialPosition=[initialPose[0], initialPose[1], 0],
-        initialOrientation=[0, 0, initialPose[2]]
-    )
+# if not IS_PHYSICAL_QCAR:
+#     import qlabs_setup
+#     qlabs_setup.setup(
+#         initialPosition=[initialPose[0], initialPose[1], 0],
+#         initialOrientation=[0, 0, initialPose[2]]
+#     )
 
 # Used to enable safe keyboard triggered shutdown
 global KILL_THREAD
@@ -447,8 +447,8 @@ if __name__ == '__main__':
     finally:
         KILL_THREAD = True
     #endregion
-    if not IS_PHYSICAL_QCAR:
-        qlabs_setup.terminate()
+    # if not IS_PHYSICAL_QCAR:
+    #     qlabs_setup.terminate()
 
     input('Experiment complete. Press any key to exit...')
 #endregion
