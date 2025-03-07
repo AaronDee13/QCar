@@ -15,7 +15,10 @@ from qvl.crosswalk import QLabsCrosswalk
 import pal.resources.rtmodels as rtmodels
 
 
-def setup(
+def terminate():
+    QLabsRealTime().terminate_real_time_model(rtmodels.QCAR_STUDIO)
+
+def main(
     initialPosition=[-1.205, -0.83, 0.005],
     initialOrientation=[0, 0, -44.7],
     rtModel=rtmodels.QCAR,
@@ -32,8 +35,7 @@ def setup(
         quit()
 
     # Delete any previous QCar instances and stop any running spawn models
-    qlabs.destroy_all_spawned_actors()
-    QLabsRealTime().terminate_all_real_time_models()
+    terminate()
 
     # Spawn a QCar at the given initial pose
     qcar = QLabsQCar(qlabs)
@@ -104,4 +106,4 @@ def setup(
 
 
 if __name__ == "__main__":
-    setup()
+    main()

@@ -1,11 +1,12 @@
 import time
 import cv2
-from concurrent.futures import ProcessPoolExecutor
-
+import multiprocessing
+from environment_setup import main as setup
+from PID_Controller import main as PID
 #from EnvironmentSetup import main as environment
 #from perception import main as perception_main
 #from controller import main as controller_main
-from PID_Controller import main as pid_controller
+#from PID_Controller import main as pid_controller
 
 
 def display_images(image_data):
@@ -18,17 +19,17 @@ def display_images(image_data):
 
 
 if __name__ == "__main__":
-    with ProcessPoolExecutor() as executor:
-        #environment_future = executor.submit(environment)
-        time.sleep(2)
-      #  perception_future = executor.submit(perception_main)
-       # controller_future = executor.submit(controller_main)
-        time.sleep(4)
-        pid_controller_future = executor.submit(pid_controller)
+    command_queue = multiprocessing.Queue()
+    environment_process = multiprocessing.Process(target=setup)
 
-        #display_images(perception_future)
 
-        #environment_future.result()
-        #perception_future.result()
-        #controller_future.result()
-        pid_controller_future.result()
+    pid_controller_process = multiprocessing.Process(
+        target=PID, args=(command_queue,)
+    )
+
+    #environment_process.start()
+    time.sleep(2)
+    pid_controller_process.start()
+
+    #environment_process.join()
+    pid_controller_process.join()
