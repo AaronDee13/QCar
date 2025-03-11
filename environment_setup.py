@@ -39,20 +39,6 @@ def setup(
     qlabs.destroy_all_spawned_actors()
     QLabsRealTime().terminate_all_real_time_models()
 
-    # Spawn a QCar at the given initial pose
-    qcar = QLabsQCar(qlabs)
-    qcar.spawn_id(
-        actorNumber=0,
-        location=[p * 10 for p in initialPosition],
-        rotation=initialOrientation,
-        waitForConfirmation=True,
-    )
-
-    # Create a new camera view and attach it to the QCar
-    hcamera = QLabsFreeCamera(qlabs)
-    hcamera.spawn()
-    qcar.possess()
-
     # Spawn stop signs
     stopsign1 = QLabsStopSign(qlabs)
     stopsign1.spawn(
@@ -102,12 +88,7 @@ def setup(
     # Start spawn model
     QLabsRealTime().start_real_time_model(rtModel)
 
-    return qcar
-
-
-def terminate():
-    QLabsRealTime().terminate_real_time_model(rtmodels.QCAR_STUDIO)
-
+    return 0
 
 if __name__ == "__main__":
     setup()
