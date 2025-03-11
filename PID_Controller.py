@@ -77,7 +77,6 @@ def main(command_queue: multiprocessing.Queue):
     def sig_handler(*args):
         global KILL_THREAD
         KILL_THREAD = True
-
     signal.signal(signal.SIGINT, sig_handler)
 
     def controlLoop():
@@ -102,7 +101,6 @@ def main(command_queue: multiprocessing.Queue):
                 k=K_stanley
             )
         #endregion
-
         #region QCar interface setup
         qcar = QCar(readMode=1, frequency=controllerUpdateRate)
         if enableSteeringControl:

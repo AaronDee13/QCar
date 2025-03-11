@@ -23,6 +23,7 @@ from qvl.stop_sign import QLabsStopSign
 from qvl.crosswalk import QLabsCrosswalk
 import pal.resources.rtmodels as rtmodels
 
+
 if __name__ == "__main__":
 
     perception_queue = multiprocessing.Queue()

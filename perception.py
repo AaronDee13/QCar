@@ -58,7 +58,6 @@ def setup_qcar(
 
     return qcar
 
-
 def main(perception_queue: multiprocessing.Queue):
     model = YOLO(model_path)
     car = setup_qcar()
