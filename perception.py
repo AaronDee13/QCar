@@ -36,7 +36,7 @@ def setup_qcar(
         quit()
 
     # Delete any previous QCar instances and stop any running spawn models
-    qlabs.destroy_all_spawned_actors()
+    # qlabs.destroy_all_spawned_actors()
     QLabsRealTime().terminate_all_real_time_models()
 
     # Spawn a QCar at the given initial pose
