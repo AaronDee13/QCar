@@ -135,7 +135,7 @@ def setup(
 
 
     # Start spawn model
-    QLabsRealTime().start_real_time_model(rtModel)
+    # QLabsRealTime().start_real_time_model(rtModel)
 
     return 0
 
