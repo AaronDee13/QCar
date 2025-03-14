@@ -42,11 +42,20 @@ def show_image(image_queue: multiprocessing.Queue):
             break
     cv2.destroyAllWindows()
 
+def show_lane(lane_detect_queue: multiprocessing.Queue):
+    while True:
+        img_display = lane_detect_queue.get()
+        cv2.imshow("Lane Detection", img_display)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+    cv2.destroyAllWindows()
+
 if __name__ == "__main__":
 
     # Create queues for communication between processes
     perception_queue = multiprocessing.Queue()
     image_queue = multiprocessing.Queue()
+    lane_detect_queue = multiprocessing.Queue()
     command_queue = multiprocessing.Queue()
 
     command_queue.put("stop")
@@ -57,9 +66,10 @@ if __name__ == "__main__":
 
     # Start the perception process
     perception_process = multiprocessing.Process(
-        target=perception, args=(perception_queue,image_queue,)
+        target=perception, args=(perception_queue,image_queue,lane_detect_queue)
     )
     perception_process.start()
+    show_lane(lane_detect_queue)
     show_image(image_queue)
 
     pid_controller_process = multiprocessing.Process(

@@ -12,10 +12,19 @@ from qvl.qcar import QLabsQCar
 from qvl.real_time import QLabsRealTime
 from PIL import Image
 import pal.resources.rtmodels as rtmodels
+from pal.products.qcar import QCar,QCarCameras
+from pal.utilities.math import *
 
+from hal.utilities.image_processing import ImageProcessing
+import numpy as np
+import math
 
 CAMERA = QLabsQCar.CAMERA_RGB
 model_path = Path("models/best.pt")
+
+imageWidth  = 820
+imageHeight = 820
+
 
 def setup_qcar(
     initialPosition=[-1.205, -0.83, 0.005],
@@ -56,7 +65,7 @@ def setup_qcar(
 
     return qcar
 
-def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Queue):
+def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Queue, lane_detect_queue: multiprocessing.Queue):
     model = YOLO(model_path)
     car = setup_qcar()
 
@@ -74,6 +83,12 @@ def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Q
             font_size=None,  # Automatically scale font size
             pil=False,  # Return as a numpy array
         )
+        # Convert to HSV and then threshold it for yellow
+        hsvBuf = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        binaryImage = ImageProcessing.binary_thresholding(frame= hsvBuf,
+											lowerBounds=np.array([10, 0, 0]),
+											upperBounds=np.array([45, 255, 255]))
         
         perception_queue.put(results)
+        lane_detect_queue.put(binaryImage)
         image_queue.put(processedImg)
