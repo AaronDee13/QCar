@@ -34,18 +34,12 @@ def sig_handler(*args):
     KILL_THREAD = True
 signal.signal(signal.SIGINT, sig_handler)
 
-def show_image(image_queue: multiprocessing.Queue):
+def show_image(lane_detect_queue: multiprocessing.Queue,image_queue: multiprocessing.Queue):
     while True:
         img_display = image_queue.get()
+        lane_display = lane_detect_queue.get()
+        cv2.imshow("Lane Detection", lane_display)
         cv2.imshow("YOLOv8 Detection", img_display)
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
-    cv2.destroyAllWindows()
-
-def show_lane(lane_detect_queue: multiprocessing.Queue):
-    while True:
-        img_display = lane_detect_queue.get()
-        cv2.imshow("Lane Detection", img_display)
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
     cv2.destroyAllWindows()
@@ -69,9 +63,8 @@ if __name__ == "__main__":
         target=perception, args=(perception_queue,image_queue,lane_detect_queue)
     )
     perception_process.start()
-    show_lane(lane_detect_queue)
-    show_image(image_queue)
 
+    show_image(lane_detect_queue, image_queue)
     pid_controller_process = multiprocessing.Process(
        target=PID, args=(command_queue,)
     )
