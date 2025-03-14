@@ -3,7 +3,7 @@
 #region : File Description and Imports
 
 """
-PID Controller for
+PID Controller for QCar Control
 """
 import os
 import signal
@@ -25,6 +25,7 @@ from controllers import SpeedController, SteeringController
 if not IS_PHYSICAL_QCAR:
     import environment_setup 
 def main(command_queue: multiprocessing.Queue):
+
     #================ Experiment Configuration ================
     # ===== Timing Parameters
     # - tf: experiment duration in seconds.
@@ -40,7 +41,7 @@ def main(command_queue: multiprocessing.Queue):
     # - K_i: integral gain for speed controller
     v_ref = 0.7
     K_p = 0.15
-    K_i = 0.3
+    K_i = 1
 
     K_d = 1
     # ===== Steering Controller Parameters
@@ -48,7 +49,7 @@ def main(command_queue: multiprocessing.Queue):
     # - K_stanley: K gain for stanley controller
     # - nodeSequence: list of nodes from roadmap. Used for trajectory generation.
     enableSteeringControl = True
-    K_stanley = 0.1
+    K_stanley = 0.5
     nodeSequence = [10, 4, 20, 10]
     #nodeSequence = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
 
@@ -63,13 +64,6 @@ def main(command_queue: multiprocessing.Queue):
     else:
         initialPose = [0, 0, 0]
 
-    # if not IS_PHYSICAL_QCAR:
-    #     import qlabs_setup
-    #     qlabs_setup.setup(
-    #         initialPosition=[initialPose[0], initialPose[1], 0],
-    #         initialOrientation=[0, 0, initialPose[2]]
-    #     )
-
     # Used to enable safe keyboard triggered shutdown
     global KILL_THREAD
     KILL_THREAD = False
@@ -80,6 +74,12 @@ def main(command_queue: multiprocessing.Queue):
     signal.signal(signal.SIGINT, sig_handler)
 
     def controlLoop():
+        if(command_queue.empty() == False):
+            command = command_queue.get()
+            if command == "stop":
+                print("Stopping QCar")
+        else:
+            print("No command received")
         #region controlLoop setup
         global KILL_THREAD
         u = 0

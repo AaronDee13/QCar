@@ -11,8 +11,6 @@ from qvl.free_camera import QLabsFreeCamera
 from qvl.qcar import QLabsQCar
 from qvl.real_time import QLabsRealTime
 from PIL import Image
-
-
 import pal.resources.rtmodels as rtmodels
 
 
@@ -58,7 +56,7 @@ def setup_qcar(
 
     return qcar
 
-def main(perception_queue: multiprocessing.Queue):
+def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Queue):
     model = YOLO(model_path)
     car = setup_qcar()
 
@@ -78,12 +76,4 @@ def main(perception_queue: multiprocessing.Queue):
         )
         
         perception_queue.put(results)
-
-        cv2.imshow("YOLOv8 Detection", processedImg)
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
-    cv2.destroyAllWindows()
-
-
-if __name__ == "__main__":
-    main()
+        image_queue.put(processedImg)
