@@ -1,10 +1,7 @@
 '''
 ## task_lane_following.py
 This example combines both the left csi and motor commands to
-allow the QCar to follow a yellow lane. Use the joystick to manually drive the
-QCar to a starting position and enable the line follower by holding the
-X button on the LogitechF710 To troubleshoot your camera use the
-hardware_test_csi_camera_single.py found in the hardware tests
+allow the QCar to follow a yellow lane. 
 '''
 # from pal.utilities.vision import Camera2D
 from pal.products.qcar import QCar,QCarCameras

@@ -28,6 +28,7 @@ def setup(
     try:
         qlabs.open("localhost")
         print("Connected to QLabs")
+        print("Setting Up Environment...")
     except:
         print("Unable to connect to QLabs")
         quit()
@@ -37,13 +38,6 @@ def setup(
     QLabsRealTime().terminate_all_real_time_models()
 
     # Spawn stop signs
-    
-    # StopSign1 = QLabsStopSign(qlabs)
-    # StopSign1.spawn(
-    #     location=[24.328, 18.0, 0.0],
-    #     rotation=[0.0, 0.0, -1.6],
-    #     waitForConfirmation=False,
-    # )
 
     StopSign1 = QLabsStopSign(qlabs)
     StopSign1.spawn(
@@ -58,20 +52,6 @@ def setup(
         rotation=[0.0, 0.0, -1.6],
         waitForConfirmation=False,
     )
-
-    # StopSign3 = QLabsStopSign(qlabs)
-    # StopSign3.spawn(
-    #     location=[-10.719, 46.669, 0.185],
-    #     rotation=[0.0, 0.0, 0.0],
-    #     waitForConfirmation=False,
-    # )
-
-    # StopSign4 = QLabsStopSign(qlabs)
-    # StopSign4.spawn(
-    #     location=[2.482, 46.673, 0.189],
-    #     rotation=[0.0, 0.0, 0.0],
-    #     waitForConfirmation=False,
-    # )
 
     StopSign5 = QLabsStopSign(qlabs)
     StopSign5.spawn(
@@ -113,14 +93,6 @@ def setup(
     TrafficLight1.spawn(location=[4.78, 3.57, 0.0], rotation=[0.0, 0.0, 0.0])
     TrafficLight1.set_color(QLabsTrafficLight.COLOR_RED)
 
-    # TrafficLight2 = QLabsTrafficLight(qlabs)
-    # TrafficLight2.spawn(location=[-21.586, 14.403, 0.192], rotation=[0.0, 0.0, math.pi])
-    # TrafficLight2.set_color(QLabsTrafficLight.COLOR_YELLOW)
-
-    # TrafficLight3 = QLabsTrafficLight(qlabs)
-    # TrafficLight3.spawn(location=[-21.586, 33.136, 0.182], rotation=[0.0, 0.0, math.pi])
-    # TrafficLight3.set_color(QLabsTrafficLight.COLOR_RED)
-
     TrafficLight4 = QLabsTrafficLight(qlabs)
     TrafficLight4.spawn(location=[7.34, 13.3, 0.0], rotation=[0.0, 0.0, 1.57])
     TrafficLight4.set_color(QLabsTrafficLight.COLOR_RED)
@@ -136,7 +108,7 @@ def setup(
 
     # Start spawn model
     # QLabsRealTime().start_real_time_model(rtModel)
-
+    print("Setup Complete")
     return 0
 
 

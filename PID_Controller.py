@@ -21,11 +21,13 @@ from hal.products.mats import SDCSRoadMap
 import pal.resources.images as images
 import multiprocessing
 from controllers import SpeedController, SteeringController
-
+from path_planning import main as path_planning
 if not IS_PHYSICAL_QCAR:
     import environment_setup 
-def main(command_queue: multiprocessing.Queue):
-
+def main(command_queue: multiprocessing.Queue,
+         path_queue: multiprocessing.Queue,
+         PU_DO_queue: multiprocessing.Queue):
+    print("Starting PID Controller...")
     #================ Experiment Configuration ================
     # ===== Timing Parameters
     # - tf: experiment duration in seconds.
@@ -42,15 +44,20 @@ def main(command_queue: multiprocessing.Queue):
     v_ref = 0.7
     K_p = 0.15
     K_i = 1
-
     K_d = 1
+    
     # ===== Steering Controller Parameters
     # - enableSteeringControl: whether or not to enable steering control
-    # - K_stanley: K gain for stanley controller
+    # - K_stanley: K gain for stanley controller    
     # - nodeSequence: list of nodes from roadmap. Used for trajectory generation.
+    initial_waypoint = PU_DO_queue.get()
+    dest_waypoint = PU_DO_queue.get()
+    print("Node sequence obtained")  
     enableSteeringControl = True
     K_stanley = 0.5
-    nodeSequence = [10, 4, 20, 10]
+    
+    nodeSequence = [initial_waypoint, dest_waypoint]
+
     #nodeSequence = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23]
 
     #endregion
@@ -59,8 +66,9 @@ def main(command_queue: multiprocessing.Queue):
     #region : Initial setup
     if enableSteeringControl:
         roadmap = SDCSRoadMap(leftHandTraffic=False)
-        waypointSequence = roadmap.generate_path(nodeSequence)
+        waypointSequence = path_queue.get()
         initialPose = roadmap.get_node_pose(nodeSequence[0]).squeeze()
+        print("Path and Initial Pose Loaded")
     else:
         initialPose = [0, 0, 0]
 
@@ -78,6 +86,14 @@ def main(command_queue: multiprocessing.Queue):
             command = command_queue.get()
             if command == "stop":
                 print("Stopping QCar")
+            if command == "go":
+                print("Moving QCar")
+            if command == "slow":
+                print("Slowing Down QCar")
+            if command == "turn left":
+                print("Turning Left")
+            if command == "turn right":
+                print("Turning Right")
         else:
             print("No command received")
         #region controlLoop setup
@@ -98,7 +114,8 @@ def main(command_queue: multiprocessing.Queue):
         if enableSteeringControl:
             steeringController = SteeringController(
                 waypoints=waypointSequence,
-                k=K_stanley
+                k=K_stanley,
+                cyclic=True
             )
         #endregion
         #region QCar interface setup
@@ -363,3 +380,17 @@ def main(command_queue: multiprocessing.Queue):
 
 
 #endregion
+
+if __name__ == "__main__":
+
+    command_queue = multiprocessing.Queue()
+    path_queue = multiprocessing.Queue()
+    PU_DO_queue= multiprocessing.Queue()
+    waypoint1 = 10
+    waypoint2 = 20
+    PU_DO_queue.put(waypoint1)
+    PU_DO_queue.put(waypoint2)
+    path_planning(path_queue, PU_DO_queue)
+    command_queue.put("stop")
+    
+    main(command_queue, path_queue, PU_DO_queue)  # Call the main function with the queues

@@ -32,12 +32,10 @@ def setup_qcar(
     rtModel=rtmodels.QCAR,
 ):
     # connect to Qlabs
-    os.system("cls")
     qlabs = QuanserInteractiveLabs()
-    print("Connecting to QLabs...")
     try:
         qlabs.open("localhost")
-        print("Connected to QLabs")
+        print("QCar Perception Started")
     except:
         print("Unable to connect to QLabs")
         quit()
@@ -64,6 +62,14 @@ def setup_qcar(
     QLabsRealTime().start_real_time_model(rtModel)
 
     return qcar
+
+def show_images(lane_detect_queue: multiprocessing.Queue,image_queue: multiprocessing.Queue):
+    print("Showing Images")
+    img_display = image_queue.get()
+    lane_display = lane_detect_queue.get()
+    cv2.imshow("Lane Detection", lane_display)
+    cv2.imshow("YOLOv8 Detection", img_display)
+    
 
 def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Queue, lane_detect_queue: multiprocessing.Queue):
     model = YOLO(model_path)
@@ -92,3 +98,4 @@ def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Q
         perception_queue.put(results)
         lane_detect_queue.put(binaryImage)
         image_queue.put(processedImg)
+        show_images(lane_detect_queue,image_queue)
