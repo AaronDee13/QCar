@@ -1,5 +1,6 @@
 import os
 import math
+import time
 
 from qvl.qlabs import QuanserInteractiveLabs
 from qvl.qcar import QLabsQCar
@@ -109,6 +110,36 @@ def setup(
     # Start spawn model
     # QLabsRealTime().start_real_time_model(rtModel)
     print("Setup Complete")
+
+    i = 1
+    while i < 100:
+        TrafficLight1.set_color(QLabsTrafficLight.COLOR_GREEN)
+        TrafficLight5.set_color(QLabsTrafficLight.COLOR_GREEN)
+        TrafficLight4.set_color(QLabsTrafficLight.COLOR_RED)
+        TrafficLight6.set_color(QLabsTrafficLight.COLOR_RED)
+        
+
+        time.sleep(10)
+
+        TrafficLight1.set_color(QLabsTrafficLight.COLOR_YELLOW)
+        TrafficLight5.set_color(QLabsTrafficLight.COLOR_YELLOW)
+
+        time.sleep(3)
+
+        TrafficLight1.set_color(QLabsTrafficLight.COLOR_RED)
+        TrafficLight5.set_color(QLabsTrafficLight.COLOR_RED)
+        TrafficLight4.set_color(QLabsTrafficLight.COLOR_GREEN)
+        TrafficLight6.set_color(QLabsTrafficLight.COLOR_GREEN)
+
+        time.sleep(10)
+
+        TrafficLight4.set_color(QLabsTrafficLight.COLOR_YELLOW)
+        TrafficLight6.set_color(QLabsTrafficLight.COLOR_YELLOW)
+
+        time.sleep(3)
+        i += 1
+        
+    
     return 0
 
 
