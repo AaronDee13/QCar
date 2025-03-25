@@ -18,10 +18,11 @@ def main(path_queue: multiprocessing.Queue,
     print("Starting route planning...")
     useSmallMap = False
     leftHandTraffic = False
+    home_waypoint = 10
     initial_waypoint = PU_DO_queue.get()
     dest_waypoint = PU_DO_queue.get()
 
-    nodeSequence = [initial_waypoint, dest_waypoint]
+    nodeSequence = [home_waypoint,initial_waypoint, dest_waypoint,home_waypoint]
 
     # Create a SDCSRoadMap instance with desired configuration.
     roadmap = SDCSRoadMap(
@@ -33,10 +34,17 @@ def main(path_queue: multiprocessing.Queue,
     # - nodeSequence can be a list or tuple of node indicies.
     # - The generated path takes the form of a 2xn numpy array
     path = roadmap.generate_path(nodeSequence=nodeSequence)
-
+    for i in nodeSequence:
+        node = roadmap.nodes[i]
+        print(
+            'Node ' + str(i) + ': Pose = ['
+            + str(node.pose[0, 0]) + ', '
+            + str(node.pose[1 ,0]) + ', '
+            + str(node.pose[2, 0]) + ']'
+        )
     # Display the roadmap with nodes, edges, and labels using matplotlib.
     plt, ax = roadmap.display()
-    plt.ion()  # Enable interactive mode
+    #plt.ion()  # Enable interactive mode
     # Plot the generated path, if one exists
     if path is None:
         print('failed to find path')
@@ -47,7 +55,7 @@ def main(path_queue: multiprocessing.Queue,
     path_queue.put((path))
     PU_DO_queue.put(initial_waypoint)
     PU_DO_queue.put(dest_waypoint)
-    #plt.show()
+    #plt.show()  
     print("Exited Path Planning")
     return 0
 

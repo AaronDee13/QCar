@@ -60,8 +60,8 @@ if __name__ == "__main__":
     environment_process.start()
     environment_process.join()
 
+    #command_queue.put("stop")
     command_queue.put("stop")
-
     # Start the perception process
     perception_process = multiprocessing.Process(
         target=perception, args=(perception_queue,image_queue,lane_detect_queue)
@@ -74,6 +74,7 @@ if __name__ == "__main__":
     PU_DO_queue.put(dropoff_waypoint)
     print(f"Received Pick-up Waypoint: {pickup_waypoint}")
     print(f"Received Drop-Off Waypoint: {dropoff_waypoint}")
+
     # Start the path planning process
     pathplanning_process = multiprocessing.Process(
         target=path_planning, args=(path_queue,PU_DO_queue)
@@ -81,14 +82,16 @@ if __name__ == "__main__":
     
     #plan path based on user input
     pathplanning_process.start() 
-     
+
+    print("Path Planning Completed")
+
     pid_controller_process = multiprocessing.Process(
        target=PID, args=(command_queue,path_queue,PU_DO_queue)
     )
         
     pid_controller_process.start()
 
-    #show_image(lane_detect_queue, image_queue)
+    show_image(lane_detect_queue, image_queue)
 
     # perception_process.join()
     #pathplanning_process.join()  

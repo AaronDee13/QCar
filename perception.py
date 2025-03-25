@@ -22,10 +22,6 @@ import math
 CAMERA = QLabsQCar.CAMERA_RGB
 model_path = Path("models/best.pt")
 
-imageWidth  = 820
-imageHeight = 820
-
-
 def setup_qcar(
     initialPosition=[-1.205, -0.83, 0.005],
     initialOrientation=[0, 0, -44.7],
@@ -63,13 +59,17 @@ def setup_qcar(
 
     return qcar
 
-def show_images(lane_detect_queue: multiprocessing.Queue,image_queue: multiprocessing.Queue):
-    print("Showing Images")
-    img_display = image_queue.get()
-    lane_display = lane_detect_queue.get()
-    cv2.imshow("Lane Detection", lane_display)
-    cv2.imshow("YOLOv8 Detection", img_display)
-    
+
+def show_image(lane_detect_queue: multiprocessing.Queue,image_queue: multiprocessing.Queue):
+   print("Showing Images")
+   while True: 
+        img_display = image_queue.get()
+        lane_display = lane_detect_queue.get()
+        cv2.imshow("Lane Detection", lane_display)
+        cv2.imshow("YOLOv8 Detection", img_display)
+        if cv2.waitKey(1) & 0xFF == ord("q"):
+            break
+   cv2.destroyAllWindows()
 
 def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Queue, lane_detect_queue: multiprocessing.Queue):
     model = YOLO(model_path)
@@ -78,6 +78,12 @@ def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Q
     while True:
         image = car.get_image(CAMERA)[1]
         results = model.predict(image, verbose=False)[0]
+        
+        #classLabel = print(int(results.boxes.cls[0]))
+        #print(results.names)
+        #print(results.boxes.xyxy[0])
+        #width = print(float(results.boxes.xywh[0, 2]))
+        #height = print(float(results.boxes.xywh[0, 3]))
         processedImg = results.plot(
             img=image,  # Plotting on the original image
             conf=True,  # Display confidence score
@@ -94,8 +100,13 @@ def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Q
         binaryImage = ImageProcessing.binary_thresholding(frame= hsvBuf,
 											lowerBounds=np.array([10, 0, 0]),
 											upperBounds=np.array([45, 255, 255]))
-        
         perception_queue.put(results)
         lane_detect_queue.put(binaryImage)
         image_queue.put(processedImg)
-        show_images(lane_detect_queue,image_queue)
+        #show_image(lane_detect_queue,image_queue)
+        
+if __name__ == "__main__":
+    percpetion_queue = multiprocessing.Queue()
+    image_queue = multiprocessing.Queue()
+    lane_detect_queue = multiprocessing.Queue()
+    main(percpetion_queue, image_queue, lane_detect_queue)  # Call the main function directly
