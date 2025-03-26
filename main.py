@@ -25,7 +25,6 @@ from qvl.stop_sign import QLabsStopSign
 from qvl.crosswalk import QLabsCrosswalk
 import pal.resources.rtmodels as rtmodels
 
-
 # Used to enable safe keyboard triggered shutdown
 global KILL_THREAD
 KILL_THREAD = False
@@ -61,12 +60,13 @@ if __name__ == "__main__":
     environment_process.join()
 
     #command_queue.put("stop")
-    command_queue.put("stop")
+    # command_queue.put("stop")
     # Start the perception process
     perception_process = multiprocessing.Process(
-        target=perception, args=(perception_queue,image_queue,lane_detect_queue)
+        target=perception, args=(perception_queue,image_queue,lane_detect_queue,command_queue)
     )
     perception_process.start()
+
     #obtain pick-up and drop-off locations from user
     pickup_waypoint = int(input("Please enter the pickup location (waypoint): "))
     PU_DO_queue.put(pickup_waypoint)
@@ -79,11 +79,10 @@ if __name__ == "__main__":
     pathplanning_process = multiprocessing.Process(
         target=path_planning, args=(path_queue,PU_DO_queue)
     )
-    
+
     #plan path based on user input
     pathplanning_process.start() 
-
-    print("Path Planning Completed")
+    time.sleep(2)
 
     pid_controller_process = multiprocessing.Process(
        target=PID, args=(command_queue,path_queue,PU_DO_queue)
