@@ -112,8 +112,8 @@ def main(command_queue: multiprocessing.Queue,
         countMax = controllerUpdateRate / 10
         count = 0
         #endregion
-        hasStopped = False
         stopTimerStart = 0
+        hasBeenAtDestination = False
 
         #region Controller initialization
         speedController = SpeedController(kp=K_p,ki=K_i,kd=K_d)
@@ -145,16 +145,13 @@ def main(command_queue: multiprocessing.Queue,
                     command = command_queue.get()
                     if command == "stop":
                         print("Stopping QCar")
-                        if not hasStopped:
-                            hasStopped = True
-                            stopTimerStart = time.time()
-                            v_ref = 0  # Stop the car
-                        elif time.time() - stopTimerStart >= 3:
-                            hasStopped = False
-                            v_ref = 0.3  # Resume the car's speed
-                    if command == "go":
+                        v_ref = 0  # Stop the car
+                    if command == "slow":
+                        print("Slowing QCar")
+                        v_ref = 0.3 # Yield spped
+                    if command == "normal":
                         print("Moving QCar")
-                        v_ref = 0.7
+                        v_ref = 0.7 # Normal speed
                 #endregion
 
                 #region : Read from sensors and update state estimates
@@ -189,20 +186,21 @@ def main(command_queue: multiprocessing.Queue,
                 #endregion
                 #region : Check if at destination
                 atDestination = geofence_check(gps.position[0], gps.position[1], node_poseX, node_poseY)     
-                if atDestination:                   
-                    if not hasStopped:
+                if atDestination:
+                    if hasBeenAtDestination == False:
+                        hasBeenAtDestination = True
                         print("At Destination")
-                        hasStopped = True
                         stopTimerStart = time.time()
-                        v_ref = 0  # Stop the car
-                    elif time.time() - stopTimerStart >= stopDuration:
-                        hasStopped = False
-                        current_dest_index = (current_dest_index + 1) % len(nodeSequence)
-                        dest_waypoint = nodeSequence[current_dest_index]
-                        #node = roadmap.nodes[dest_waypoint]
-                        node_poseX = round(roadmap.nodes[dest_waypoint].pose[0, 0], 2)
-                        node_poseY = round(roadmap.nodes[dest_waypoint].pose[1, 0], 2)
-                        v_ref = 0.7  # Resume the car's speed
+                        command_queue.put("stop")  # Stop the car
+                        
+                if time.time() - stopTimerStart >= stopDuration and hasBeenAtDestination == True:
+                    hasBeenAtDestination = False
+                    current_dest_index = (current_dest_index + 1) % len(nodeSequence)
+                    dest_waypoint = nodeSequence[current_dest_index]
+                    #node = roadmap.nodes[dest_waypoint]
+                    node_poseX = round(roadmap.nodes[dest_waypoint].pose[0, 0], 2)
+                    node_poseY = round(roadmap.nodes[dest_waypoint].pose[1, 0], 2)
+                    command_queue.put("normal")  # Resume the car's speed
 
                 #endregion
                 #region : Update controllers and write to car

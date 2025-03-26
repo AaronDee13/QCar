@@ -9,7 +9,6 @@ from pal.products.qcar import QCarRealSense
 #from EnvironmentSetup import main as environment
 from perception import main as perception
 from path_planning import main as path_planning
-from command_controller import main as controller_main
 #from controller import main as controller_main
 #from PID_Controller import main as pid_controller
 from pal.products.qcar import QCar, QCarGPS, IS_PHYSICAL_QCAR
@@ -84,11 +83,6 @@ if __name__ == "__main__":
     #plan path based on user input
     pathplanning_process.start() 
     time.sleep(2)
-
-    commander_process = multiprocessing.Process(
-        target=controller_main, args=(perception_queue, command_queue)
-    )
-    commander_process.start()
 
     pid_controller_process = multiprocessing.Process(
        target=PID, args=(command_queue,path_queue,PU_DO_queue)
