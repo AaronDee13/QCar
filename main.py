@@ -24,7 +24,7 @@ from qvl.flooring import QLabsFlooring
 from qvl.stop_sign import QLabsStopSign
 from qvl.crosswalk import QLabsCrosswalk
 import pal.resources.rtmodels as rtmodels
-from user_input import main as user_input
+
 
 # Used to enable safe keyboard triggered shutdown
 global KILL_THREAD
