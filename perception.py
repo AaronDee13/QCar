@@ -14,13 +14,19 @@ from PIL import Image
 import pal.resources.rtmodels as rtmodels
 from pal.products.qcar import QCar,QCarCameras
 from pal.utilities.math import *
-
 from hal.utilities.image_processing import ImageProcessing
 import numpy as np
 import math
 
 CAMERA = QLabsQCar.CAMERA_RGB
 model_path = Path("models/best.pt")
+MIN_BB_STOP_SIZE = 50
+MIN_BB_YIELD_SIZE = 30
+
+STOP_SIGN_WAIT_TIME = 4
+YIELD_SIGN_SLOW_TIME = 5
+steeringFilter = Filter().low_pass_first_order_variable(25,0.033)
+next(steeringFilter)
 
 def setup_qcar(
     initialPosition=[-1.205, -0.83, 0.005],
@@ -59,31 +65,25 @@ def setup_qcar(
 
     return qcar
 
-
-def show_image(lane_detect_queue: multiprocessing.Queue,image_queue: multiprocessing.Queue):
-   print("Showing Images")
-   while True: 
-        img_display = image_queue.get()
-        lane_display = lane_detect_queue.get()
-        cv2.imshow("Lane Detection", lane_display)
-        cv2.imshow("YOLOv8 Detection", img_display)
-        if cv2.waitKey(1) & 0xFF == ord("q"):
-            break
-   cv2.destroyAllWindows()
-
-def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Queue, lane_detect_queue: multiprocessing.Queue):
+def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Queue, 
+         lane_detect_queue: multiprocessing.Queue, command_queue: multiprocessing.Queue):
     model = YOLO(model_path)
     car = setup_qcar()
-
+    dt = 0.033
+    lastInteractedWithStopSign = 0
+    lastInteractedWithYieldSign = 0
+    waitingAtStopSign = False
+    waitingAtYieldSign = False
     while True:
+        # start = time.time()
         image = car.get_image(CAMERA)[1]
         results = model.predict(image, verbose=False)[0]
         
         #classLabel = print(int(results.boxes.cls[0]))
         #print(results.names)
         #print(results.boxes.xyxy[0])
-        #width = print(float(results.boxes.xywh[0, 2]))
-        #height = print(float(results.boxes.xywh[0, 3]))
+        # width = print(float(results.boxes.xywh[0, 2]))
+        # height = print(float(results.boxes.xywh[0, 3]))
         processedImg = results.plot(
             img=image,  # Plotting on the original image
             conf=True,  # Display confidence score
@@ -100,11 +100,59 @@ def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Q
         binaryImage = ImageProcessing.binary_thresholding(frame= hsvBuf,
 											lowerBounds=np.array([10, 0, 0]),
 											upperBounds=np.array([45, 255, 255]))
+
+        if len(results.boxes.cls) > 0:
+            #we need to find the nearest class label, so the largest
+            #classLabel = int(results.boxes.cls[0])
+            #height = float(results.boxes.xywh[0, 3])
+            height = 0
+            classLabel = 0
+            for i in range(len(results.boxes.cls)):
+                if float(results.boxes.xywh[i, 3]) > height:
+                    height = float(results.boxes.xywh[i, 3])
+                    classLabel = int(results.boxes.cls[i])
+            
+            GRACE_PERIOD = 1
+
+            #print("Class Label: ", classLabel, "Height: ", height)
+            if classLabel == 1: #Stop Sign
+                if height > MIN_BB_STOP_SIZE:
+                    # grace period check
+                    if time.time() - lastInteractedWithStopSign > STOP_SIGN_WAIT_TIME + GRACE_PERIOD:
+                        lastInteractedWithStopSign = time.time()
+                        waitingAtStopSign = True
+                        command_queue.put("stop")
+                        print("Stop Sign Detected")
+            if(classLabel == 5): #Yield Sign
+                if height > MIN_BB_YIELD_SIZE:
+                    if time.time() - lastInteractedWithYieldSign > YIELD_SIGN_SLOW_TIME + GRACE_PERIOD:
+                        lastInteractedWithYieldSign = time.time()
+                        waitingAtYieldSign = True
+                        command_queue.put("slow")
+                        print("Yield Sign Detected")
+            if(classLabel == 2):
+                print("Traffic Light Green Detected")
+            if(classLabel == 3):
+                print("Traffic Light Red Detected")
+            if(classLabel == 4):
+                print("Traffic Light Yellow Detected")
+            
+
+        # determine if we should move forward after waiting the appropriate time
+        if time.time() - lastInteractedWithStopSign > STOP_SIGN_WAIT_TIME and waitingAtStopSign:
+            waitingAtStopSign = False
+            lastInteractedWithStopSign = time.time() - STOP_SIGN_WAIT_TIME
+            command_queue.put("normal")
+        
+        if time.time() - lastInteractedWithYieldSign > YIELD_SIGN_SLOW_TIME and waitingAtYieldSign:
+            waitingAtYieldSign = False
+            lastInteractedWithYieldSign = time.time() - YIELD_SIGN_SLOW_TIME
+            command_queue.put("normal")
+        
         perception_queue.put(results)
         lane_detect_queue.put(binaryImage)
         image_queue.put(processedImg)
-        #show_image(lane_detect_queue,image_queue)
-        
+
 if __name__ == "__main__":
     percpetion_queue = multiprocessing.Queue()
     image_queue = multiprocessing.Queue()

@@ -56,7 +56,7 @@ def setup(
 
     StopSign5 = QLabsStopSign(qlabs)
     StopSign5.spawn(
-        location=[-3.195, -12.521, 0.2],
+        location=[0, -12.521, 0.2],
         rotation=[0.0, 0.0, 3.14],
         waitForConfirmation=False,
     )
@@ -90,20 +90,22 @@ def setup(
     )
 
     # spawn traffic lights
+    #these two are across from eachother
     TrafficLight1 = QLabsTrafficLight(qlabs)
-    TrafficLight1.spawn(location=[4.78, 3.57, 0.0], rotation=[0.0, 0.0, 0.0])
+    TrafficLight1.spawn(location=[4.78, 15.5, 0.0], rotation=[0.0, 0.0, 0.0])
     TrafficLight1.set_color(QLabsTrafficLight.COLOR_RED)
 
-    TrafficLight4 = QLabsTrafficLight(qlabs)
-    TrafficLight4.spawn(location=[7.34, 13.3, 0.0], rotation=[0.0, 0.0, 1.57])
-    TrafficLight4.set_color(QLabsTrafficLight.COLOR_RED)
-
     TrafficLight5 = QLabsTrafficLight(qlabs)
-    TrafficLight5.spawn(location=[-2.1, 15.5, 0.0], rotation=[0.0, 0.0, 3.14])
+    TrafficLight5.spawn(location=[-2.1, 3.57, 0.0], rotation=[0.0, 0.0, 3.14])
     TrafficLight5.set_color(QLabsTrafficLight.COLOR_RED)
+
+    #these two are across from eachother
+    TrafficLight4 = QLabsTrafficLight(qlabs)
+    TrafficLight4.spawn(location=[-4.85, 13.3, 0.0], rotation=[0.0, 0.0, 1.57])
+    TrafficLight4.set_color(QLabsTrafficLight.COLOR_RED)
  
     TrafficLight6 = QLabsTrafficLight(qlabs)
-    TrafficLight6.spawn(location=[-4.85, 6.3, 0.0], rotation=[0.0, 0.0, 4.71])
+    TrafficLight6.spawn(location=[7.34, 6.3, 0.0], rotation=[0.0, 0.0, 4.71])
     TrafficLight6.set_color(QLabsTrafficLight.COLOR_RED)
 
 
@@ -111,33 +113,33 @@ def setup(
     # QLabsRealTime().start_real_time_model(rtModel)
     print("Setup Complete")
 
-    i = 1
-    while i < 100:
-        TrafficLight1.set_color(QLabsTrafficLight.COLOR_GREEN)
-        TrafficLight5.set_color(QLabsTrafficLight.COLOR_GREEN)
-        TrafficLight4.set_color(QLabsTrafficLight.COLOR_RED)
-        TrafficLight6.set_color(QLabsTrafficLight.COLOR_RED)
+    # i = 1
+    # while i < 100:
+    #     TrafficLight1.set_color(QLabsTrafficLight.COLOR_GREEN)
+    #     TrafficLight5.set_color(QLabsTrafficLight.COLOR_GREEN)
+    #     TrafficLight4.set_color(QLabsTrafficLight.COLOR_RED)
+    #     TrafficLight6.set_color(QLabsTrafficLight.COLOR_RED)
         
 
-        time.sleep(10)
+    #     time.sleep(10)
 
-        TrafficLight1.set_color(QLabsTrafficLight.COLOR_YELLOW)
-        TrafficLight5.set_color(QLabsTrafficLight.COLOR_YELLOW)
+    #     TrafficLight1.set_color(QLabsTrafficLight.COLOR_YELLOW)
+    #     TrafficLight5.set_color(QLabsTrafficLight.COLOR_YELLOW)
 
-        time.sleep(3)
+    #     time.sleep(3)
 
-        TrafficLight1.set_color(QLabsTrafficLight.COLOR_RED)
-        TrafficLight5.set_color(QLabsTrafficLight.COLOR_RED)
-        TrafficLight4.set_color(QLabsTrafficLight.COLOR_GREEN)
-        TrafficLight6.set_color(QLabsTrafficLight.COLOR_GREEN)
+    #     TrafficLight1.set_color(QLabsTrafficLight.COLOR_RED)
+    #     TrafficLight5.set_color(QLabsTrafficLight.COLOR_RED)
+    #     TrafficLight4.set_color(QLabsTrafficLight.COLOR_GREEN)
+    #     TrafficLight6.set_color(QLabsTrafficLight.COLOR_GREEN)
 
-        time.sleep(10)
+    #     time.sleep(10)
 
-        TrafficLight4.set_color(QLabsTrafficLight.COLOR_YELLOW)
-        TrafficLight6.set_color(QLabsTrafficLight.COLOR_YELLOW)
+    #     TrafficLight4.set_color(QLabsTrafficLight.COLOR_YELLOW)
+    #     TrafficLight6.set_color(QLabsTrafficLight.COLOR_YELLOW)
 
-        time.sleep(3)
-        i += 1
+    #     time.sleep(3)
+    #     i += 1
         
     
     return 0
