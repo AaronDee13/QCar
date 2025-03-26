@@ -1,7 +1,7 @@
 import os
 import math
 import time
-
+import multiprocessing
 from qvl.qlabs import QuanserInteractiveLabs
 from qvl.qcar import QLabsQCar
 from qvl.free_camera import QLabsFreeCamera
@@ -15,7 +15,7 @@ from qvl.stop_sign import QLabsStopSign
 from qvl.yield_sign import QLabsYieldSign
 from qvl.crosswalk import QLabsCrosswalk
 import pal.resources.rtmodels as rtmodels
-
+from trafficLight_controller import main as TL_controller
 
 def setup(
     initialPosition=[-1.205, -0.83, 0.005],
@@ -107,7 +107,23 @@ def setup(
     TrafficLight6 = QLabsTrafficLight(qlabs)
     TrafficLight6.spawn(location=[7.34, 6.3, 0.0], rotation=[0.0, 0.0, 4.71])
     TrafficLight6.set_color(QLabsTrafficLight.COLOR_RED)
+    
+    while True:
+        TrafficLight1.set_color(QLabsTrafficLight.COLOR_GREEN)
+        TrafficLight5.set_color(QLabsTrafficLight.COLOR_GREEN)
+        TrafficLight4.set_color(QLabsTrafficLight.COLOR_RED)
+        TrafficLight6.set_color(QLabsTrafficLight.COLOR_RED)
 
+        t0 = time.time()
+        while time.time() - t0 < 10:
+            pass
+        
+        TrafficLight1.set_color(QLabsTrafficLight.COLOR_YELLOW)
+        TrafficLight5.set_color(QLabsTrafficLight.COLOR_YELLOW)
+
+        t0 = time.time()
+        while time.time() - t0 < 3:
+            pass
 
     # Start spawn model
     # QLabsRealTime().start_real_time_model(rtModel)
@@ -133,15 +149,18 @@ def setup(
     #     TrafficLight4.set_color(QLabsTrafficLight.COLOR_GREEN)
     #     TrafficLight6.set_color(QLabsTrafficLight.COLOR_GREEN)
 
+        t0 = time.time()
+        while time.time() - t0 < 10:
+            pass
     #     time.sleep(10)
 
     #     TrafficLight4.set_color(QLabsTrafficLight.COLOR_YELLOW)
     #     TrafficLight6.set_color(QLabsTrafficLight.COLOR_YELLOW)
 
+    # Start spawn model
     #     time.sleep(3)
     #     i += 1
         
-    
     return 0
 
 
