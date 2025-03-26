@@ -69,12 +69,21 @@ if __name__ == "__main__":
     perception_process.start()
 
     #obtain pick-up and drop-off locations from user
-    pickup_waypoint = int(input("Please enter the pickup location (waypoint): "))
+    """ pickup_waypoint = int(input("Please enter the pickup location (waypoint): "))
     PU_DO_queue.put(pickup_waypoint)
     dropoff_waypoint = int(input("Please enter the drop-off location (waypoint): "))
     PU_DO_queue.put(dropoff_waypoint)
     print(f"Received Pick-up Waypoint: {pickup_waypoint}")
-    print(f"Received Drop-Off Waypoint: {dropoff_waypoint}")
+    print(f"Received Drop-Off Waypoint: {dropoff_waypoint}") """
+
+    pickup_x = float(input("Please enter the pickup location (x-coordinate): "))
+    PU_DO_queue.put(pickup_x)
+    pickup_y = float(input("Please enter the pickup location (y-coordinate): "))
+    PU_DO_queue.put(pickup_y)
+    dropoff_x = float(input("Please enter the drop-off location (x-coordinate): "))
+    PU_DO_queue.put(dropoff_x)
+    dropoff_y = float(input("Please enter the drop-off location (y-coordinate): "))
+    PU_DO_queue.put(dropoff_y)
 
     # Start the path planning process
     pathplanning_process = multiprocessing.Process(

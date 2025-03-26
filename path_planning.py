@@ -19,16 +19,43 @@ def main(path_queue: multiprocessing.Queue,
     useSmallMap = False
     leftHandTraffic = False
     home_waypoint = 10
-    initial_waypoint = PU_DO_queue.get()
-    dest_waypoint = PU_DO_queue.get()
+    initial_x = PU_DO_queue.get()
+    initial_y = PU_DO_queue.get()
+    dest_x = PU_DO_queue.get()
+    dest_y = PU_DO_queue.get()
+    print(f"Initial Waypoint Coordinates: {initial_x},{initial_y}")
+    print(f"Destination Waypoint Coordinates: {dest_x},{dest_y}")
 
-    nodeSequence = [home_waypoint,initial_waypoint, dest_waypoint,home_waypoint]
+    #initial_waypoint = PU_DO_queue.get()
+    #dest_waypoint = PU_DO_queue.get()
 
     # Create a SDCSRoadMap instance with desired configuration.
     roadmap = SDCSRoadMap(
         leftHandTraffic=leftHandTraffic,
         useSmallMap=useSmallMap
     )
+
+    #we need to find the nearest waypoints for these
+    initial_waypoint = 0
+    initial_waypoint_distance = 100000000
+    dest_waypoint = 0
+    dest_waypoint_distance = 100000000
+    for i in range(len(roadmap.nodes)):
+        node = roadmap.nodes[i]
+        distance = np.sqrt((node.pose[0,0] - initial_x)**2 + (node.pose[1,0] - initial_y)**2)
+        print(f"x = {node.pose[0,0]}, y = {node.pose[1,0]}")
+        if distance < initial_waypoint_distance:
+            initial_waypoint = i
+            initial_waypoint_distance = distance
+        distance = np.sqrt((node.pose[0,0] - dest_x)**2 + (node.pose[1,0] - dest_y)**2)
+        if distance < dest_waypoint_distance:
+            dest_waypoint = i
+            dest_waypoint_distance = distance
+    
+    print(f"Initial Waypoint: {initial_waypoint}")
+    print(f"Destination Waypoint: {dest_waypoint}")
+
+    nodeSequence = [home_waypoint,initial_waypoint, dest_waypoint,home_waypoint]
 
     # Generate the shortest path passing through the given sequence of nodes.
     # - nodeSequence can be a list or tuple of node indicies.
