@@ -34,14 +34,14 @@ def main(path_queue: multiprocessing.Queue,
     # - nodeSequence can be a list or tuple of node indicies.
     # - The generated path takes the form of a 2xn numpy array
     path = roadmap.generate_path(nodeSequence=nodeSequence)
-    for i in nodeSequence:
-        node = roadmap.nodes[i]
-        print(
-            'Node ' + str(i) + ': Pose = ['
-            + str(node.pose[0, 0]) + ', '
-            + str(node.pose[1 ,0]) + ', '
-            + str(node.pose[2, 0]) + ']'
-        )
+    # for i in nodeSequence:
+    #     node = roadmap.nodes[i]
+    #     print(
+    #         'Node ' + str(i) + ': Pose = ['
+    #         + str(node.pose[0, 0]) + ', '
+    #         + str(node.pose[1 ,0]) + ', '
+    #         + str(node.pose[2, 0]) + ']'
+    #     )
     # Display the roadmap with nodes, edges, and labels using matplotlib.
     plt, ax = roadmap.display()
     #plt.ion()  # Enable interactive mode

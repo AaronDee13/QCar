@@ -25,14 +25,13 @@ from path_planning import main as path_planning
 if not IS_PHYSICAL_QCAR:
     import environment_setup 
 
-
 def geofence_check(x, y, node_poseX, node_poseY):
 
     # Define the geofence boundaries
-    geofence_x_min = node_poseX - 0.3
-    geofence_x_max = node_poseX + 0.3
-    geofence_y_min = node_poseY - 0.3
-    geofence_y_max = node_poseY + 0.3
+    geofence_x_min = node_poseX - 0.1
+    geofence_x_max = node_poseX + 0.1
+    geofence_y_min = node_poseY - 0.1
+    geofence_y_max = node_poseY + 0.1
 
     # Check if the current position is within the geofence
     if geofence_x_min <= x <= geofence_x_max and geofence_y_min <= y <= geofence_y_max:
@@ -44,6 +43,7 @@ def main(command_queue: multiprocessing.Queue,
          path_queue: multiprocessing.Queue,
          PU_DO_queue: multiprocessing.Queue):
     print("Starting PID Controller...")
+
     #================ Experiment Configuration ================
     # ===== Timing Parameters
     # - tf: experiment duration in seconds.
@@ -51,9 +51,7 @@ def main(command_queue: multiprocessing.Queue,
     # - controllerUpdateRate: control update rate in Hz. Shouldn't exceed 500
     tf = 6000
     startDelay = 1
-    controllerUpdateRate = 100
-
-        
+    controllerUpdateRate = 300
 
     # ===== Speed Controller Parameters
     # - v_ref: desired velocity in m/s
@@ -61,8 +59,8 @@ def main(command_queue: multiprocessing.Queue,
     # - K_i: integral gain for speed controller
     v_ref_initial = 0.7
     K_p = 0.15
-    K_i = 1
-    K_d = 1
+    K_i = 1.5
+    K_d = 0.3
 
     # ===== Steering Controller Parameters
     # - enableSteeringControl: whether or not to enable steering control
@@ -72,17 +70,13 @@ def main(command_queue: multiprocessing.Queue,
     dropoff_waypoint = PU_DO_queue.get()
     home_waypoint = 10
     enableSteeringControl = True
-    K_stanley = 0.7
+    K_stanley = 0.5
     nodeSequence = [home_waypoint,pickup_waypoint, dropoff_waypoint, home_waypoint]
-    numNodes = len(nodeSequence)
     #endregion
     # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-
     #region : Initial setup
     stopDuration = 5
     atDestination = False
-    state = 'go'
-
     if enableSteeringControl:
         roadmap = SDCSRoadMap(leftHandTraffic=False)
         waypointSequence = path_queue.get()
@@ -105,41 +99,21 @@ def main(command_queue: multiprocessing.Queue,
         u = 0
         delta = 0
         v_ref = v_ref_initial
+        MIN_BB_HEIGHT = 70
+        
         # Initialize node_poseX and node_poseY
         current_dest_index = 1
         dest_waypoint = nodeSequence[current_dest_index]
         node_poseX = round(roadmap.nodes[dest_waypoint].pose[0, 0], 2)
         node_poseY = round(roadmap.nodes[dest_waypoint].pose[1, 0], 2)
-        node = roadmap.nodes[dest_waypoint]
-        print(
-            'Node ' + str(dest_waypoint) + ': Pose = ['
-            + f'{node_poseX:.2f}, '
-            + f'{node_poseY:.2f}, '
-            + f'{node.pose[2, 0]:.2f}]'
-        )
-        
-        
+        #node = roadmap.nodes[dest_waypoint]
+            
         # used to limit data sampling to 10hz
         countMax = controllerUpdateRate / 10
         count = 0
         #endregion
         hasStopped = False
         stopTimerStart = 0
-        if(command_queue.empty() == False):
-            command = command_queue.get()
-            if command == "stop":
-                print("Stopping QCar")
-            if command == "go":
-                print("Moving QCar")
-            if command == "slow":
-                print("Slowing Down QCar")
-            if command == "turn left":
-                print("Turning Left")
-            if command == "turn right":
-                print("Turning Right")
-        else:
-            print("No command received")
-            command = 'idle'
 
         #region Controller initialization
         speedController = SpeedController(kp=K_p,ki=K_i,kd=K_d)
@@ -167,7 +141,20 @@ def main(command_queue: multiprocessing.Queue,
                 tp = t
                 t = time.time() - t0
                 dt = t-tp
-               
+                if(command_queue.empty() == False):
+                    command = command_queue.get()
+                    if command == "stop":
+                        print("Stopping QCar")
+                        if not hasStopped:
+                            hasStopped = True
+                            stopTimerStart = time.time()
+                            v_ref = 0  # Stop the car
+                        elif time.time() - stopTimerStart >= 3:
+                            hasStopped = False
+                            v_ref = 0.3  # Resume the car's speed
+                    if command == "go":
+                        print("Moving QCar")
+                        v_ref = 0.7
                 #endregion
 
                 #region : Read from sensors and update state estimates
@@ -198,17 +185,13 @@ def main(command_queue: multiprocessing.Queue,
                     th = ekf.x_hat[2,0]
                     p = ( np.array([x, y])
                         + np.array([np.cos(th), np.sin(th)]) * 0.2)
-                v = qcar.motorTach
-
-
-                    
+                v = qcar.motorTach 
                 #endregion
-                
                 #region : Check if at destination
                 atDestination = geofence_check(gps.position[0], gps.position[1], node_poseX, node_poseY)     
-                if atDestination:
-                    print("At Destination")                    
+                if atDestination:                   
                     if not hasStopped:
+                        print("At Destination")
                         hasStopped = True
                         stopTimerStart = time.time()
                         v_ref = 0  # Stop the car
@@ -216,15 +199,15 @@ def main(command_queue: multiprocessing.Queue,
                         hasStopped = False
                         current_dest_index = (current_dest_index + 1) % len(nodeSequence)
                         dest_waypoint = nodeSequence[current_dest_index]
-                        node = roadmap.nodes[dest_waypoint]
-                        node_poseX = round(node.pose[0, 0], 2)
-                        node_poseY = round(node.pose[1, 0], 2)
+                        #node = roadmap.nodes[dest_waypoint]
+                        node_poseX = round(roadmap.nodes[dest_waypoint].pose[0, 0], 2)
+                        node_poseY = round(roadmap.nodes[dest_waypoint].pose[1, 0], 2)
                         v_ref = 0.7  # Resume the car's speed
 
                 #endregion
                 #region : Update controllers and write to car
                
-                if t < startDelay or hasStopped:
+                if t < startDelay:
                     u = 0
                     delta = 0     
                 else:
