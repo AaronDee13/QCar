@@ -15,7 +15,6 @@ from qvl.stop_sign import QLabsStopSign
 from qvl.yield_sign import QLabsYieldSign
 from qvl.crosswalk import QLabsCrosswalk
 import pal.resources.rtmodels as rtmodels
-from trafficLight_controller import main as TL_controller
 
 def setup(
     initialPosition=[-1.205, -0.83, 0.005],
@@ -23,7 +22,6 @@ def setup(
     rtModel=rtmodels.QCAR,
 ):
     # connect to Qlabs
-    os.system("cls")
     qlabs = QuanserInteractiveLabs()
     print("Connecting to QLabs...")
     try:
@@ -109,6 +107,7 @@ def setup(
     TrafficLight6.set_color(QLabsTrafficLight.COLOR_RED)
     
     while True:
+
         TrafficLight1.set_color(QLabsTrafficLight.COLOR_GREEN)
         TrafficLight5.set_color(QLabsTrafficLight.COLOR_GREEN)
         TrafficLight4.set_color(QLabsTrafficLight.COLOR_RED)
@@ -125,41 +124,22 @@ def setup(
         while time.time() - t0 < 3:
             pass
 
-    # Start spawn model
-    # QLabsRealTime().start_real_time_model(rtModel)
-    print("Setup Complete")
-
-    # i = 1
-    # while i < 100:
-    #     TrafficLight1.set_color(QLabsTrafficLight.COLOR_GREEN)
-    #     TrafficLight5.set_color(QLabsTrafficLight.COLOR_GREEN)
-    #     TrafficLight4.set_color(QLabsTrafficLight.COLOR_RED)
-    #     TrafficLight6.set_color(QLabsTrafficLight.COLOR_RED)
-        
-
-    #     time.sleep(10)
-
-    #     TrafficLight1.set_color(QLabsTrafficLight.COLOR_YELLOW)
-    #     TrafficLight5.set_color(QLabsTrafficLight.COLOR_YELLOW)
-
-    #     time.sleep(3)
-
-    #     TrafficLight1.set_color(QLabsTrafficLight.COLOR_RED)
-    #     TrafficLight5.set_color(QLabsTrafficLight.COLOR_RED)
-    #     TrafficLight4.set_color(QLabsTrafficLight.COLOR_GREEN)
-    #     TrafficLight6.set_color(QLabsTrafficLight.COLOR_GREEN)
+        TrafficLight1.set_color(QLabsTrafficLight.COLOR_RED)
+        TrafficLight5.set_color(QLabsTrafficLight.COLOR_RED)
+        TrafficLight4.set_color(QLabsTrafficLight.COLOR_GREEN)
+        TrafficLight6.set_color(QLabsTrafficLight.COLOR_GREEN)
 
         t0 = time.time()
         while time.time() - t0 < 10:
             pass
-    #     time.sleep(10)
 
-    #     TrafficLight4.set_color(QLabsTrafficLight.COLOR_YELLOW)
-    #     TrafficLight6.set_color(QLabsTrafficLight.COLOR_YELLOW)
+        TrafficLight4.set_color(QLabsTrafficLight.COLOR_YELLOW)
+        TrafficLight6.set_color(QLabsTrafficLight.COLOR_YELLOW)
 
-    # Start spawn model
-    #     time.sleep(3)
-    #     i += 1
+
+        t0 = time.time()
+        while time.time() - t0 < 3:
+            pass
         
     return 0
 

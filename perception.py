@@ -22,6 +22,7 @@ CAMERA = QLabsQCar.CAMERA_RGB
 model_path = Path("models/best.pt")
 MIN_BB_STOP_SIZE = 50
 MIN_BB_YIELD_SIZE = 30
+MIN_BB_TRAFFIC_LIGHT_SIZE = 30
 
 STOP_SIGN_WAIT_TIME = 4
 YIELD_SIGN_SLOW_TIME = 5
@@ -72,8 +73,10 @@ def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Q
     dt = 0.033
     lastInteractedWithStopSign = 0
     lastInteractedWithYieldSign = 0
+    lastSawRedLight = 0
     waitingAtStopSign = False
     waitingAtYieldSign = False
+    waitingAtTrafficLight = False
     while True:
         # start = time.time()
         image = car.get_image(CAMERA)[1]
@@ -109,10 +112,28 @@ def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Q
             classLabel = 0
             for i in range(len(results.boxes.cls)):
                 if float(results.boxes.xywh[i, 3]) > height:
+                    tempClassLabel = int(results.boxes.cls[i])
+                    #fun BS, we detect traffic lights on the left and right too, so we need to really just filter for the center of the screen
+                    if (tempClassLabel == 2 or tempClassLabel == 3 or tempClassLabel == 4):
+                        #check if any of the BB is outside of the window
+                        if float(results.boxes.xyxyn[i, 0]) < 0 or float(results.boxes.xyxyn[i, 2]) > 1:
+                            continue
+                        if float(results.boxes.xyxyn[i, 1]) < 0 or float(results.boxes.xyxyn[i, 3]) > 1:
+                            continue
+                        #get horizontal window width
+                        horizontalCenterNormalized = (float(results.boxes.xyxyn[i, 0]) + float(results.boxes.xyxyn[i, 2])) / 2
+                        if horizontalCenterNormalized - 0.5 < TRAFFIC_LIGHT_CENTERED_WIDTH and horizontalCenterNormalized - 0.5 > -TRAFFIC_LIGHT_CENTERED_WIDTH:
+                            height = float(results.boxes.xywh[i, 3])
+                            classLabel = int(results.boxes.cls[i])
+                            #continue to next
+                            continue
+                        #skip if it isnt
+                        continue
                     height = float(results.boxes.xywh[i, 3])
                     classLabel = int(results.boxes.cls[i])
             
             GRACE_PERIOD = 1
+            TRAFFIC_LIGHT_CENTERED_WIDTH = 0.5
 
             #print("Class Label: ", classLabel, "Height: ", height)
             if classLabel == 1: #Stop Sign
@@ -131,11 +152,14 @@ def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Q
                         command_queue.put("slow")
                         print("Yield Sign Detected")
             if(classLabel == 2):
-                print("Traffic Light Green Detected")
-            if(classLabel == 3):
-                print("Traffic Light Red Detected")
-            if(classLabel == 4):
-                print("Traffic Light Yellow Detected")
+                if height > MIN_BB_TRAFFIC_LIGHT_SIZE:
+                    print("Traffic Light Green Detected")
+                    command_queue.put("normal")
+            if(classLabel == 3 or classLabel == 4): #red or yellow
+                if height > MIN_BB_TRAFFIC_LIGHT_SIZE:
+                    lastSawRedLight = time.time()
+                    waitingAtTrafficLight = True
+                    command_queue.put("stop")
             
 
         # determine if we should move forward after waiting the appropriate time
@@ -147,6 +171,13 @@ def main(perception_queue: multiprocessing.Queue, image_queue: multiprocessing.Q
         if time.time() - lastInteractedWithYieldSign > YIELD_SIGN_SLOW_TIME and waitingAtYieldSign:
             waitingAtYieldSign = False
             lastInteractedWithYieldSign = time.time() - YIELD_SIGN_SLOW_TIME
+            command_queue.put("normal")
+
+        TRAFFIC_LIGHT_TIMEOUT = 2
+
+        if time.time() - lastSawRedLight > TRAFFIC_LIGHT_TIMEOUT and waitingAtTrafficLight:
+            waitingAtTrafficLight = False
+            lastSawRedLight = time.time() - TRAFFIC_LIGHT_TIMEOUT
             command_queue.put("normal")
         
         perception_queue.put(results)

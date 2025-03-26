@@ -47,6 +47,7 @@ def show_image(lane_detect_queue: multiprocessing.Queue,image_queue: multiproces
 
 
 if __name__ == "__main__":
+    os.system("cls")
     # Create queues for communication between processes
     perception_queue = multiprocessing.Queue()
     image_queue = multiprocessing.Queue()
@@ -57,7 +58,7 @@ if __name__ == "__main__":
     # Start the environment setup process
     environment_process = multiprocessing.Process(target=setup)
     environment_process.start()
-    environment_process.join()
+    #environment_process.join()
 
     #command_queue.put("stop")
     # command_queue.put("stop")
